@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  username    String        @unique
+  password    String
+  email       String
+  isAdmin     Boolean
+  BetInstance BetInstance[]
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  from        DateTime
+  to          DateTime
+  Bet         Bet[]
+}
+
+model SportType {
+  id     Int      @id @default(autoincrement())
+  name   String
+  League League[]
+}
+
+model League {
+  id          Int       @id @default(autoincrement())
+  name        String
+  countryCode String
+  sportTypeId Int
+  sportType   SportType @relation(fields: [sportTypeId], references: [id])
+  Bet         Bet[]
+}
+
+model Bet {
+  id                  Int           @id @default(autoincrement())
+  type                String
+  typeCondition       String?
+  teamHomeDescription String
+  teamAwayDescription String
+  teamHomeUrl         String?
+  teamAwayUrl         String?
+  leagueId            Int
+  question            String?
+  date                DateTime
+  result              String?
+  url                 String?
+  eventId             Int
+  event               Event         @relation(fields: [eventId], references: [id])
+  league              League        @relation(fields: [leagueId], references: [id])
+  BetInstance         BetInstance[]
+}
+
+model BetInstance {
+  betId   Int
+  userId  Int
+  userBet String
+  points  Int
+  bet     Bet    @relation(fields: [betId], references: [id])
+  user    User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, betId])
+}
